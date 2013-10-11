@@ -1,0 +1,4 @@
+name = Simple Password Reset
+description = When resetting a password, skip the unnecessary and confusing one-time login form.
+core = 7.x
+files[] = simple_pass_reset.module
