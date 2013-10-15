@@ -83,16 +83,22 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
     $form['account']['pass']['#required'] = TRUE;
 
     if (arg(5) == 'brief') {
-      // Since the user is most interested in getting a working password, we don't need to show their picture, timezone, etc.
+      // The user is most interested in getting a working password, don't show their picture, timezone, etc.
       foreach (element_children($form) as $key) {
-        //dpm($form[$key], $key);
-        if ($form[$key]['#type'] == 'fieldset') {
+        if (in_array($form[$key]['#type'], array('hidden', 'actions'))) {
+          // Do not alter these elements.
+        }
+        else {
+          // Hide other elements.
           $form[$key]['#access'] = FALSE;
         }
       }
+      // Except don't hide these.
       $form['account']['#access'] = TRUE;
       $form['actions']['#access'] = TRUE;
       $form['actions']['submit']['#value'] = t('Reset password');
+
+      // But seriously do hide these.
       $form['account']['mail']['#access'] = FALSE;
     }
 
@@ -118,5 +124,21 @@ function simple_pass_reset_pass_reset_submit($form, &$form_state) {
     drupal_set_message(t('Your password has been reset.  Welcome back, %name.', array('%name' => format_username($account))));
 
     $form_state['redirect'] = 'user';
+  }
+}
+
+
+/**
+ * Implements hook_module_implements_alter().
+ *
+ * Asks Drupal to run our form_alter hooks after other modules.
+ */
+function simple_pass_reset_module_implements_alter(&$implementations, $hook) {
+  // The hook we're interested in is hook_form_FORM_ID_alter().  Yet, in this function we have to manipulate 'form_alter'.  Because Drupal is tricky like that.
+  if ($hook == 'form_alter' && isset($implementations['simple_pass_reset'])) {
+    // Make our form alters come last (so we act after other modules have already altered).
+    $group = $implementations['simple_pass_reset'];
+    unset($implementations['simple_pass_reset']);
+    $implementations['simple_pass_reset'] = $group;
   }
 }
