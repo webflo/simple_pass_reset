@@ -7,7 +7,7 @@ function simple_pass_reset_menu_alter(&$items) {
   // Drupal's default behavior is to show the user a log-in form before
   // their user profile.  We replace this item to skip the uneccesary step.
   $items['user/reset/%/%/%'] = array(
-    'title' => 'Reset password',
+    'title' => 'Account settings',
     'access callback' => 'simple_pass_reset_pass_reset_access',
     'access arguments' => array(2, 3, 4),
     'page callback' => 'simple_pass_reset_pass_reset_page',
@@ -83,6 +83,7 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
     $form['account']['pass']['#required'] = TRUE;
 
     if (arg(5) == 'brief') {
+      drupal_set_title(t('Reset password'));
       // The user is most interested in getting a working password, don't show their picture, timezone, etc.
       foreach (element_children($form) as $key) {
         if (in_array($form[$key]['#type'], array('hidden', 'actions'))) {
@@ -96,7 +97,6 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
       // Except don't hide these.
       $form['account']['#access'] = TRUE;
       $form['actions']['#access'] = TRUE;
-      $form['actions']['submit']['#value'] = t('Reset password');
 
       // But seriously do hide these.
       $form['account']['mail']['#access'] = FALSE;
@@ -120,8 +120,6 @@ function simple_pass_reset_pass_reset_submit($form, &$form_state) {
     user_login_finalize();
 
     watchdog('user', 'User %name used one-time login link.', array('%name' => $account->name));
-    // This message gets lost during session change! Not sure how to fix that.
-    drupal_set_message(t('Your password has been reset.  Welcome back, %name.', array('%name' => format_username($account))));
 
     $form_state['redirect'] = 'user';
   }
