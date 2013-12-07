@@ -23,7 +23,7 @@ function simple_pass_reset_menu_alter(&$items) {
  * Access callback for use with Drupal's menu API.
  */
 function simple_pass_reset_pass_reset_access($uid, $timestamp, $hashed_pass) {
-  if (!drupal_anonymous_user()) {
+  if (user_is_logged_in()) {
     return FALSE;
   }
 
@@ -73,7 +73,7 @@ function simple_pass_reset_pass_reset_page($uid, $timestamp, $hashed_pass, $opti
  * Implements hook_form_FORM_ID_alter().
  */
 function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
-  if (arg(0) == 'user' && arg(1) == 'reset' && drupal_anonymous_user()) {
+  if (arg(0) == 'user' && arg(1) == 'reset' && !user_is_logged_in()) {
     // This is not the normal profile edit form, but actually the password reset form.
 
     // Our submit handler will log the use in after form submit.
@@ -113,7 +113,7 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
  * Submit callback for Drupal form API.
  */
 function simple_pass_reset_pass_reset_submit($form, &$form_state) {
-  if (drupal_anonymous_user()) { // Sanity check.
+  if (!user_is_logged_in()) { // Sanity check.
     // This logic copied from user_pass_reset().
     $account = $form_state['user'];
     $GLOBALS['user'] = $form_state['user'];
