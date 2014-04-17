@@ -134,6 +134,11 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
  */
 function simple_pass_reset_pass_reset_submit($form, &$form_state) {
   if (!user_is_logged_in()) { // Sanity check.
+    // Remove roles that were disabled in the form. Normally user_module will array_filter() these out for us.  But remember_me and possibly other modules have bugs that might prevent user.module from doing that.
+    if (!empty($form_state['user']->roles)) {
+      $form_state['user']->roles = array_filter($form_state['user']->roles);
+    }
+
     // This logic copied from user_pass_reset().
     $account = $form_state['user'];
     $GLOBALS['user'] = $form_state['user'];
