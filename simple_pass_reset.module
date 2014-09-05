@@ -14,9 +14,6 @@ function simple_pass_reset_menu_alter(&$items) {
     'page arguments' => array(2, 3, 4),
     'type' => MENU_CALLBACK,
   );
-
-  // Better title on user pages.
-  $items['user']['title callback'] = 'simple_pass_reset_menu_title_user';
 }
 
 /**
