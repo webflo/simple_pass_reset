@@ -103,7 +103,11 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
 
 
       if (arg(5) == 'brief') {
-        drupal_set_title(t('Reset password'));
+        drupal_set_title(t('Choose a new password')); // Instead of "Reset password".
+
+        // Hide "To change the current user password..."
+        unset($form['account']['pass']['#description']);
+
         // The user is most interested in getting a working password, don't show their picture, timezone, etc.
         foreach (element_children($form) as $key) {
           if (in_array($form[$key]['#type'], array('hidden', 'actions'))) {
