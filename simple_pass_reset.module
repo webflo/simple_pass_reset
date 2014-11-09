@@ -50,7 +50,11 @@ function simple_pass_reset_pass_reset_access($uid, $timestamp, $hashed_pass) {
  * This page replaces core one-time login form provided by user_pass_reset().
  */
 function simple_pass_reset_pass_reset_page($uid, $timestamp, $hashed_pass, $option = NULL) {
+  // Never cache this page.
+  drupal_page_is_cacheable(FALSE);
+
   module_load_include('inc', 'user', 'user.pages');
+
   // When $option is original or login, preserve original behavior.
   if ($option == 'original') {
     return drupal_get_form('user_pass_reset', $uid, $timestamp, $hashed_pass);
