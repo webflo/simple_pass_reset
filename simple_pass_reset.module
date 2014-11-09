@@ -119,9 +119,9 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
       }
     }
 
-    // This is to avoid a PHP Notice in user_profile_form_submit().
-    if (!isset($_SESSION)) {
-      $_SESSION = array();
+    // This is to avoid a PHP Notice in user_profile_form_submit().  https://www.drupal.org/node/2111293#comment-9262499
+    if (empty($_SESSION)) {
+      $_SESSION = array('simple_pass_reset' => TRUE);
     }
   }
 }
