@@ -151,7 +151,9 @@ function simple_pass_reset_pass_reset_submit($form, &$form_state) {
 
     watchdog('user', 'User %name used one-time login link.', array('%name' => $account->name));
 
-    $form_state['redirect'] = 'user';
+    if(empty($form_state['redirect'])) {
+      $form_state['redirect'] = 'user';
+    }
   }
 }
 
