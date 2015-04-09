@@ -37,7 +37,7 @@ function simple_pass_reset_pass_reset_access($uid, $timestamp, $hashed_pass) {
       drupal_set_message(t('You have tried to use a one-time login link that has expired. Please request a new one using the form below.'));
       drupal_goto('user/password');
     }
-    elseif ($account->uid && $timestamp >= $account->login && $timestamp <= $current && $hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login)) {
+    elseif ($account->uid && $timestamp >= $account->login && $timestamp <= $current && $hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid)) {
       return TRUE;
     }
   }
