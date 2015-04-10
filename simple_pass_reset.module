@@ -76,33 +76,30 @@ function simple_pass_reset_pass_reset_page($uid, $timestamp, $hashed_pass, $opti
  * Implements hook_form_FORM_ID_alter().
  */
 function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
-
   // Don't alter the normal profile edit form, but only the password reset form.
   if (arg(0) == 'user' && arg(1) == 'reset' && !user_is_logged_in()) {
-
-    // Our submit handler will log the use in after form submit.
+    // Our submit handler will log the user in after form submit.
     $form['#submit'][] = 'simple_pass_reset_pass_reset_submit';
 
-    $form['actions']['submit']['#value'] = t('Save and log in as !username', array(
-                                               '!username' => format_username($form['#user']),
-                                             ));
+    $form['actions']['submit']['#value'] = t('Save and log in as !username', array('!username' => format_username($form['#user'])));
 
-    // Links provided by bakery.module will not work because we are not yet logged in.
+    // Links provided by the Bakery module will not work because the user is not
+    // logged in yet.
     if (!empty($form['bakery'])) {
       $form['bakery']['#access'] = FALSE;
 
-      // Normally bakery.module would make the following change to the user_pass_reset form.
+      // Normally the Bakery module would make the following change to the
+      // user_pass_reset form.
       if (!variable_get('bakery_is_master', FALSE)) {
-        // Set a submit handler for the psuedo-reset form.
+        // Set a submit handler for the pseudo-reset form.
         $form['#submit'] = array('_bakery_reset_submit');
       }
     }
 
-    // Some third-party modules (like bakery) might hide account elements.
+    // Some third-party modules (like Bakery) might hide account elements.
     if (!isset($form['account']['#access']) || $form['account']['#access']) {
       // Require a new password.
       $form['account']['pass']['#required'] = TRUE;
-
 
       if (arg(5) == 'brief') {
         drupal_set_title(t('Choose a new password')); // Instead of "Reset password".
@@ -112,7 +109,7 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
 
         // The user is most interested in getting a working password, don't show their picture, timezone, etc.
         foreach (element_children($form) as $key) {
-          if (in_array($form[$key]['#type'], array('hidden', 'actions'))) {
+          if (in_array($form[$key]['#type'], array('hidden', 'actions', 'captcha'))) {
             // Do not alter these elements.
           }
           else {
