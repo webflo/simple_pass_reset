@@ -1,0 +1,8 @@
+{
+  "name": "drupal/simple_pass_reset",
+  "description": "When resetting a password, skip the unnecessary and confusing one-time login form.",
+  "type": "drupal-module",
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev",
+  "require": { }
+}
