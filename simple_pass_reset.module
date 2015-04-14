@@ -5,13 +5,17 @@
  *
  * @see user_profile_form()
  */
-function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
-  // Don't alter the normal profile edit form, but only the password reset form.
-  if (arg(0) == 'user' && arg(1) == 'reset' && !user_is_logged_in()) {
-    // Our submit handler will log the user in after form submit.
-    $form['#submit'][] = 'simple_pass_reset_pass_reset_submit';
+function simple_pass_reset_form_user_form_alter(&$form, \Drupal\Core\Form\FormState $form_state) {
+  $route_match = \Drupal::routeMatch();
+  $valid_route = $route_match->getRouteName() == 'simple_pass_reset.reset' || $route_match->getRouteName() == 'simple_pass_reset.reset_brief';
 
-    $form['actions']['submit']['#value'] = t('Save and log in as !username', array('!username' => format_username($form['#user'])));
+  // Don't alter the normal profile edit form, but only the password reset form.
+  if ($valid_route && \Drupal::currentUser()->isAnonymous()) {
+    $user = $form_state->getBuildInfo()['callback_object']->getEntity();
+
+    // Our submit handler will log the user in after form submit.
+    $form['actions']['submit']['#submit'][] = 'simple_pass_reset_pass_reset_submit';
+    $form['actions']['submit']['#value'] = t('Save and log in as !username', array('!username' => $user->getUsername()));
 
     // Links provided by the Bakery module will not work because the user is not
     // logged in yet.
@@ -31,8 +35,11 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
       // Require a new password.
       $form['account']['pass']['#required'] = TRUE;
 
-      if (arg(5) == 'brief') {
-        drupal_set_title(t('Choose a new password')); // Instead of "Reset password".
+      if ($route_match->getRouteName() == 'simple_pass_reset.reset_brief') {
+        /**
+         * @todo
+         */
+        // drupal_set_title(t('Choose a new password')); // Instead of "Reset password".
 
         // Hide "To change the current user password..."
         unset($form['account']['pass']['#description']);
@@ -66,25 +73,26 @@ function simple_pass_reset_form_user_profile_form_alter(&$form, &$form_state) {
 /**
  * Submit callback for Drupal form API.
  */
-function simple_pass_reset_pass_reset_submit($form, &$form_state) {
-  if (!user_is_logged_in()) { // Sanity check.
+function simple_pass_reset_pass_reset_submit($form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  if (\Drupal::currentUser()->isAnonymous()) { // Sanity check.
     // Remove roles that were disabled in the form. Normally the User module
     // will array_filter() these out for us.  But remember_me and possibly other
     // modules have bugs that might prevent it from doing so.
+    /*
     if (!empty($form_state['user']->roles)) {
       $form_state['user']->roles = array_filter($form_state['user']->roles);
     }
+    */
 
     // Load the user account afresh and finalize the login.
     // @see user_login_submit()
     global $user;
-    $user = user_load($form_state['user']->uid);
-    user_login_finalize();
+    $user = user_load($form_state->getValue('uid'));
+    user_login_finalize($user);
+    \Drupal::logger('user')->notice('User %name used one-time login link.', array('%name' => $user->getUsername()));
 
-    watchdog('user', 'User %name used one-time login link.', array('%name' => $user->name));
-
-    if(empty($form_state['redirect'])) {
-      $form_state['redirect'] = 'user';
+    if (!$form_state->getRedirect()) {
+      $form_state->setRedirectUrl($user->urlInfo());
     }
   }
 }
@@ -118,8 +126,8 @@ function simple_pass_reset_module_implements_alter(&$implementations, $hook) {
  */
 function simple_pass_reset_form_user_pass_alter(&$form, &$form_state) {
   // If the user views the password reset form while logged in...
-  if (user_is_logged_in()) {
-    drupal_set_title(t('Reset my password'));
+  if (\Drupal::currentUser()->isAuthenticated()) {
+    // drupal_set_title(t('Reset my password'));
 
     // Update the help text and button text to indicate that submitting the form
     // will log them out.
@@ -135,23 +143,16 @@ function simple_pass_reset_form_user_pass_alter(&$form, &$form_state) {
  * Submit callback: log out when an authenticated user submits the password
  * reset form.
  */
-function simple_pass_reset_form_user_pass_submit($form, &$form_state) {
-  global $user;
+function simple_pass_reset_form_user_pass_submit($form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  $user = \Drupal::currentUser();
+  if ($user->isAuthenticated()) {
+    user_logout();
 
-  if (user_is_logged_in()) {
-    drupal_session_destroy_uid($user->uid);
-
-    // Some code copied from user_logout(), which we cannot call here because it
-    // uses drupal_goto().
-    watchdog('user', 'Session closed for %name.', array('%name' => $user->name));
-
-    module_invoke_all('user_logout', $user);
-
-    // Destroy the current session, and reset $user to the anonymous user.
-    session_destroy();
-
+    /**
+     * @todo: The message is lost after logout.
+     */
     // Note call drupal_set_message() AFTER session_destroy().
     drupal_set_message(t('The password reset link has been sent to your e-mail address. You are now logged out.'));
-    $form_state['redirect'] = '<front>';
+    $form_state->setRedirect('<front>');
   }
 }
