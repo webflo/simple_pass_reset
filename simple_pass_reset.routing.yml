@@ -1,0 +1,21 @@
+simple_pass_reset.reset:
+  path: '/user/reset/{uid}/{timestamp}/{hash}'
+  defaults:
+    _controller: '\Drupal\simple_pass_reset\Controller\SimplePassResetUserController::resetPass'
+    _title: 'Reset password'
+  requirements:
+    _access: 'TRUE'
+  options:
+    _maintenance_access: TRUE
+    no_cache: TRUE
+
+simple_pass_reset.reset_brief:
+  path: '/user/reset/{uid}/{timestamp}/{hash}/brief'
+  defaults:
+    _controller: '\Drupal\simple_pass_reset\Controller\SimplePassResetUserController::resetPass'
+    _title: 'Reset password'
+  requirements:
+    _access: 'TRUE'
+  options:
+    _maintenance_access: TRUE
+    no_cache: TRUE
