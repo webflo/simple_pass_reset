@@ -1,4 +1,0 @@
-name = Simple Password Reset
-description = When resetting a password, skip the unnecessary and confusing one-time login form.
-package = User interface
-core = 7.x
