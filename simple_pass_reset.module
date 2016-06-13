@@ -1,5 +1,7 @@
 <?php
 
+
+
 /**
  * Implements hook_form_FORM_ID_alter().
  *
@@ -45,7 +47,7 @@ function simple_pass_reset_form_user_form_alter(&$form, \Drupal\Core\Form\FormSt
         unset($form['account']['pass']['#description']);
 
         // The user is most interested in getting a working password, don't show their picture, timezone, etc.
-        foreach (element_children($form) as $key) {
+        foreach (\Drupal\Core\Render\Element::children($form) as $key) {
           if (isset($form[$key]['#type']) && in_array($form[$key]['#type'], array('hidden', 'actions', 'captcha'))) {
             // Do not alter these elements.
           }
