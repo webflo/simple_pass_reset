@@ -1,15 +1,13 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\simple_pass_reset\Controller\SimplePassResetUserController.
- */
-
 namespace Drupal\simple_pass_reset\Controller;
 
 use Drupal\user\Controller\UserController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
+/**
+ *
+ */
 class SimplePassResetUserController extends UserController {
 
   /**

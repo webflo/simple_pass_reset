@@ -1,13 +1,15 @@
 <?php
 
-
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
+use Drupal\Core\Form\FormState;
 
 /**
  * Implements hook_form_FORM_ID_alter().
  *
  * @see user_profile_form()
  */
-function simple_pass_reset_form_user_form_alter(&$form, \Drupal\Core\Form\FormState $form_state) {
+function simple_pass_reset_form_user_form_alter(&$form, FormState $form_state) {
   $route_match = \Drupal::routeMatch();
   $valid_route = $route_match->getRouteName() == 'simple_pass_reset.reset' || $route_match->getRouteName() == 'simple_pass_reset.reset_brief';
 
@@ -42,12 +44,11 @@ function simple_pass_reset_form_user_form_alter(&$form, \Drupal\Core\Form\FormSt
          * @todo
          */
         // drupal_set_title(t('Choose a new password')); // Instead of "Reset password".
-
-        // Hide "To change the current user password..."
+        // Hide "To change the current user password...".
         unset($form['account']['pass']['#description']);
 
         // The user is most interested in getting a working password, don't show their picture, timezone, etc.
-        foreach (\Drupal\Core\Render\Element::children($form) as $key) {
+        foreach (Element::children($form) as $key) {
           if (isset($form[$key]['#type']) && in_array($form[$key]['#type'], array('hidden', 'actions', 'captcha'))) {
             // Do not alter these elements.
           }
@@ -75,16 +76,17 @@ function simple_pass_reset_form_user_form_alter(&$form, \Drupal\Core\Form\FormSt
 /**
  * Submit callback for Drupal form API.
  */
-function simple_pass_reset_pass_reset_submit($form, \Drupal\Core\Form\FormStateInterface $form_state) {
-  if (\Drupal::currentUser()->isAnonymous()) { // Sanity check.
+function simple_pass_reset_pass_reset_submit($form, FormStateInterface $form_state) {
+  // Sanity check.
+  if (\Drupal::currentUser()->isAnonymous()) {
     // Remove roles that were disabled in the form. Normally the User module
     // will array_filter() these out for us.  But remember_me and possibly other
     // modules have bugs that might prevent it from doing so.
     /*
     if (!empty($form_state['user']->roles)) {
-      $form_state['user']->roles = array_filter($form_state['user']->roles);
+    $form_state['user']->roles = array_filter($form_state['user']->roles);
     }
-    */
+     */
 
     // Load the user account afresh and finalize the login.
     // @see user_login_submit()
@@ -114,7 +116,6 @@ function simple_pass_reset_module_implements_alter(&$implementations, $hook) {
   }
 }
 
-
 /**
  * Implements hook_form_FORM_ID_alter().
  *
@@ -129,8 +130,7 @@ function simple_pass_reset_module_implements_alter(&$implementations, $hook) {
 function simple_pass_reset_form_user_pass_alter(&$form, &$form_state) {
   // If the user views the password reset form while logged in...
   if (\Drupal::currentUser()->isAuthenticated()) {
-    // drupal_set_title(t('Reset my password'));
-
+    // drupal_set_title(t('Reset my password'));.
     // Update the help text and button text to indicate that submitting the form
     // will log them out.
     $form['mail']['#markup'] = t('We will e-mail a password reset link for your account to %email. You will be logged out when you submit this form and should use that link to log back in.', array('%email' => $form['name']['#value']));
@@ -145,7 +145,7 @@ function simple_pass_reset_form_user_pass_alter(&$form, &$form_state) {
  * Submit callback: log out when an authenticated user submits the password
  * reset form.
  */
-function simple_pass_reset_form_user_pass_submit($form, \Drupal\Core\Form\FormStateInterface $form_state) {
+function simple_pass_reset_form_user_pass_submit($form, FormStateInterface $form_state) {
   $user = \Drupal::currentUser();
   if ($user->isAuthenticated()) {
     user_logout();
