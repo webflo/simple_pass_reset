@@ -15,11 +15,10 @@ function simple_pass_reset_form_user_form_alter(&$form, FormState $form_state) {
 
   // Don't alter the normal profile edit form, but only the password reset form.
   if ($valid_route && \Drupal::currentUser()->isAnonymous()) {
-    $user = $form_state->getBuildInfo()['callback_object']->getEntity();
 
     // Our submit handler will log the user in after form submit.
     $form['actions']['submit']['#submit'][] = 'simple_pass_reset_pass_reset_submit';
-    $form['actions']['submit']['#value'] = t('Save and log in as !username', array('!username' => $user->getUsername()));
+    $form['actions']['submit']['#value'] = t('Save new password and log in');
 
     // Links provided by the Bakery module will not work because the user is not
     // logged in yet.
