@@ -3,7 +3,7 @@
 namespace Drupal\simple_pass_reset\Controller;
 
 use Drupal\user\Controller\UserController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  *
@@ -13,6 +13,8 @@ class SimplePassResetUserController extends UserController {
   /**
    * Returns the user password reset page.
    *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    * @param int $uid
    *   UID of user requesting reset.
    * @param int $timestamp
@@ -26,15 +28,18 @@ class SimplePassResetUserController extends UserController {
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    *   If the login link is for a blocked user or invalid user ID.
    */
-  public function resetPass($uid, $timestamp, $hash) {
-    $origin = parent::resetPass($uid, $timestamp, $hash);
-    if ($origin instanceof RedirectResponse) {
-      return $origin;
+  public function resetPass(Request $request, $uid, $timestamp, $hash) {
+
+    if (in_array(\Drupal::routeMatch()->getRouteName(), [
+      'simple_pass_reset.reset','simple_pass_reset.reset_brief'])) {
+      /* @var \Drupal\user\UserInterface $user */
+      $user = $this->userStorage->load($uid);
+      return $this->entityFormBuilder()->getForm($user);
     }
 
-    /* @var \Drupal\user\UserInterface $user */
-    $user = $this->userStorage->load($uid);
-    return $this->entityFormBuilder()->getForm($user);
+    $origin = parent::resetPass($request, $uid, $timestamp, $hash);
+
+    return $origin;
   }
 
 }
